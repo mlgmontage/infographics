@@ -4,7 +4,7 @@ const port = process.env.PORT || 8080
 const Datastore = require('nedb')
 const db = new Datastore({ filename: 'database.json'})
 const fs = require('fs')
-
+require('dotenv').config();
 
 db.loadDatabase()
 
@@ -13,8 +13,10 @@ const fetch = require('node-fetch')
 global.Headers = fetch.Headers;
 
 // Authorization
+const api_login = process.env.API_LOGIN;
+const api_password = process.env.API_PASSWORD;
 let headers = new Headers();
-headers.set('Authorization', 'Basic ' + Buffer.from('artrade@aqtau109.kz' + ":" + 'ba75cd31-52ad-493b-abed-e93259dff49c').toString('base64'));
+headers.set('Authorization', 'Basic ' + Buffer.from(api_login + ":" + api_password).toString('base64'));
 
 // Обноволение базы данных
 async function updateDB() {
