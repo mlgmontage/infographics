@@ -71,9 +71,10 @@ async function updateDB() {
 }
 
 // интервал 24 часа
-const interval = 1000 * 60 * 60 * 24;
+const interval = 1000 * 60 * 60 * 4;
 
-// База обновляется каждые 24 часа
+updateDB();
+// База обновляется каждые 4 часа
 setInterval(updateDB, interval);
 
 // Заявки
