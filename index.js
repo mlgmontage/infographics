@@ -4,11 +4,14 @@ const port = process.env.PORT || 8080
 const Datastore = require('nedb')
 const db = new Datastore({ filename: 'database.json'})
 const fs = require('fs')
+const schedule = require('node-schedule')
 require('dotenv').config();
 
 db.loadDatabase()
-
 const fetch = require('node-fetch')
+const rule = new schedule.RecurrenceRule();
+
+rule.minute = 45;
 
 global.Headers = fetch.Headers;
 
@@ -71,9 +74,11 @@ async function updateDB() {
 }
 
 
-// База обновляется каждые 4 часа
-setInterval(updateDB, 1000 * 60 * 60 * 4);
-
+// База обновляется 
+let j = schedule.scheduleJob(rule, function() {
+	console.log('Database has been updated');
+	updateDB();
+})
 // Заявки
 app.get('/api/v1/tickets', async (request, response) => {
 	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=open,closed`;
