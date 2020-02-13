@@ -70,11 +70,9 @@ async function updateDB() {
 	console.log(json.pagination);
 }
 
-// интервал 24 часа
-const interval = 1000 * 60 * 60 * 4;
 
 // База обновляется каждые 4 часа
-setInterval(updateDB, interval);
+setInterval(updateDB, 1000 * 60 * 60 * 4);
 
 // Заявки
 app.get('/api/v1/tickets', async (request, response) => {
