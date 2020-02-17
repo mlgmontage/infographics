@@ -15,6 +15,13 @@ rule.minute = 45;
 
 global.Headers = fetch.Headers;
 
+// Allow CORS
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 // Authorization
 const api_login = process.env.API_LOGIN;
 const api_password = process.env.API_PASSWORD;
