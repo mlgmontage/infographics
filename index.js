@@ -17,7 +17,7 @@ global.Headers = fetch.Headers;
 
 // Allow CORS
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
@@ -34,7 +34,12 @@ async function updateDB() {
 
 	// Удаление преведущей файла базы данных
 	try {
-		fs.unlinkSync(pathToDBFile)
+
+		if (fs.existsSync(pathToDBFile)) {
+    		fs.unlinkSync(pathToDBFile);
+    		console.log('database has been deleted');
+  		}
+
 	} catch(error) {
 		console.error(error)
 	}
@@ -48,10 +53,13 @@ async function updateDB() {
 	});
 	const json = await fetch_response.json();
 
+	// iteration through pages
 	for(let i = 1; i <= json.pagination.total_pages; i++) {
 
+		// new url
 		const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}&status_list=open,closed`;
 		
+		// fetching data from new url
 		fetch(api_url, {
 			method: 'GET',
 			headers: headers
@@ -69,7 +77,10 @@ async function updateDB() {
 				await db.insert(value, function(error, newDoc) {
 					console.log('data has been successfully saved')
 				})
-			})
+			});
+
+			// clearing the array
+			temp = [];
 
 			// console.log(json)
 
@@ -80,6 +91,7 @@ async function updateDB() {
 	console.log(json.pagination);
 }
 
+updateDB();
 
 // База обновляется 
 let j = schedule.scheduleJob(rule, function() {
