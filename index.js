@@ -91,7 +91,6 @@ async function updateDB() {
 	console.log(json.pagination);
 }
 
-updateDB();
 
 
 // База обновляется 
