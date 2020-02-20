@@ -29,66 +29,76 @@ let headers = new Headers();
 headers.set('Authorization', 'Basic ' + Buffer.from(api_login + ":" + api_password).toString('base64'));
 
 // Обноволение базы данных
-async function updateDB() {
+function updateDB() {
 	const pathToDBFile = './database.json';
 
 	// Удаление преведущей файла базы данных
 	try {
 
 		if (fs.existsSync(pathToDBFile)) {
-    		fs.unlinkSync(pathToDBFile);
-    		console.log('database has been deleted');
+    		fs.unlink(pathToDBFile, (err) => {
+    			if (err) throw err;
+    			console.log('database has been deleted');
+
+    			let temp = []
+
+				const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
+				fetch(api_url, {
+					method: 'GET',
+					headers: headers
+				}).then((response) => {
+					return response.json();
+
+				}).then((json) => {
+
+					console.log(json);
+
+
+					// iteration through pages
+					for(let i = 1; i <= json.pagination.total_pages; i++) {
+						// new url
+						const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}`;
+						// fetching data from new url
+						fetch(api_url, {
+							method: 'GET',
+							headers: headers
+						}).then((response) => {
+
+							return response.json();
+
+						}).then((json) => {
+							for(let record of Object.keys(json.data)) {
+								temp.push(json.data[record])
+							}
+							// saving to database
+							temp.forEach(value => {
+								db.insert(value, function(error, newDoc) {
+									console.log('data has been successfully saved')
+								})
+							});
+							// clearing the array
+							temp = [];
+
+
+						})
+					}
+
+
+
+				});
+
+				
+    		});
+    		
   		}
 
 	} catch(error) {
 		console.error(error)
 	}
 
-	let temp = []
-
-	const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
-	const fetch_response = await fetch(api_url, {
-		method: 'GET',
-		headers: headers
-	});
-	const json = await fetch_response.json();
-
-	// iteration through pages
-	for(let i = 1; i <= json.pagination.total_pages; i++) {
-
-		// new url
-		const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}`;
-		
-		// fetching data from new url
-		fetch(api_url, {
-			method: 'GET',
-			headers: headers
-		}).then((response) => {
-
-			return response.json();
-
-		}).then((json) => {
-			for(let record of Object.keys(json.data)) {
-				temp.push(json.data[record])
-			}
-
-			// saving to database
-			temp.forEach(async value => {
-				await db.insert(value, function(error, newDoc) {
-					console.log('data has been successfully saved')
-				})
-			});
-
-			// clearing the array
-			temp = [];
-
-			// console.log(json)
-
-		})
-	}
 
 
-	console.log(json.pagination);
+	// console.log(json.pagination);
 }
 
 updateDB();
