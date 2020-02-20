@@ -3,7 +3,6 @@ const app = express()
 const port = process.env.PORT || 8080
 const Datastore = require('nedb')
 const db = new Datastore({ filename: 'database.json'})
-const fs = require('fs')
 const schedule = require('node-schedule')
 require('dotenv').config();
 
@@ -33,76 +32,52 @@ function updateDB() {
 	const pathToDBFile = './database.json';
 
 	// Удаление преведущей файла базы данных
-	try {
 
-		if (fs.existsSync(pathToDBFile)) {
-    		fs.unlink(pathToDBFile, (err) => {
-    			if (err) throw err;
-    			console.log('database has been deleted');
+	db.remove({}, { multi: true }, function (err, numRemoved) {
+		console.log('database has been erased ');
+	});
 
-    			let temp = []
+	const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
+	fetch(api_url, {
+		method: 'GET',
+		headers: headers
+	}).then((response) => {
+		return response.json();
 
-				const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
-				fetch(api_url, {
-					method: 'GET',
-					headers: headers
-				}).then((response) => {
-					return response.json();
+	}).then((json) => {
 
-				}).then((json) => {
-
-					console.log(json);
+		console.log(json);
 
 
-					// iteration through pages
-					for(let i = 1; i <= json.pagination.total_pages; i++) {
-						// new url
-						const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}`;
-						// fetching data from new url
-						fetch(api_url, {
-							method: 'GET',
-							headers: headers
-						}).then((response) => {
+		// iteration through pages
+		for(let i = 1; i <= json.pagination.total_pages; i++) {
+			// new url
+			const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}`;
+			// fetching data from new url
+			fetch(api_url, {
+				method: 'GET',
+				headers: headers
+			}).then((response) => {
 
-							return response.json();
+				return response.json();
 
-						}).then((json) => {
-							for(let record of Object.keys(json.data)) {
-								temp.push(json.data[record])
-							}
-							// saving to database
-							temp.forEach(value => {
-								db.insert(value, function(error, newDoc) {
-									console.log('data has been successfully saved')
-								})
-							});
-							// clearing the array
-							temp = [];
+			}).then((json) => {
+				for(let record of Object.keys(json.data)) {
+					db.insert(json.data[record], function(error, newDoc) {
+						console.log('data has been successfully saved')
+					})
 
-
-						})
-					}
+				}
+			})
+		}
 
 
 
-				});
+	});
 
-				
-    		});
-    		
-  		}
-
-	} catch(error) {
-		console.error(error)
-	}
-
-
-
-	// console.log(json.pagination);
 }
 
 updateDB();
-
 
 
 // База обновляется 
