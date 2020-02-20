@@ -91,12 +91,14 @@ async function updateDB() {
 	console.log(json.pagination);
 }
 
+updateDB();
+
 
 
 // База обновляется 
 let j = schedule.scheduleJob(rule, function() {
-	console.log('Database has been updated');
 	updateDB();
+	console.log('Database has been updated');
 })
 // Заявки
 app.get('/api/v1/tickets', async (request, response) => {
