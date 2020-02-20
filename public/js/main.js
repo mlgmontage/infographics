@@ -28,7 +28,8 @@ const tickets = Vue.component('tickets', {
 
 
       <a class="ui blue tag label" v-if="item.status_id === 'open'">Открытая заявка</a>
-      <a class="ui teal tag label" v-else >Закрытая заявка</a>
+      <a class="ui teal tag label" v-if="item.status_id === 'closed'">Закрытая заявка</a>
+      <a class="ui red tag label" v-if="item.status_id === 'prosrocheno'" >Просроченная заявка</a>
       <div class="ui divider"></div>
     </div>
   </div>
@@ -48,9 +49,11 @@ const app = new Vue({
     organizations: null,
     open_tickets: null,
     closed_tickets: null,
+    prosrocheno_tickets: null,
     ticketCount: {
       open: 0,
-      closed: 0
+      closed: 0,
+      prosrocheno: 0
     }
   },
   mounted: function() {
@@ -81,6 +84,16 @@ const app = new Vue({
         this.closed_tickets = response.data
       })
 
+    // Просроченные заявки
+    fetch('/api/v1/tickets/prosrocheno', {
+      'method': 'get',
+      'Content-Type': 'application/json'
+    }).then(response => response.json())
+      .then(response => {
+        this.prosrocheno_tickets = response.data
+      })
+
+
     // Сумма открытых заявок
     fetch('/api/v1/tickets/opentickets', {
         'method': 'get',
@@ -99,6 +112,17 @@ const app = new Vue({
           this.ticketCount.closed = parseInt(response);
         })
 
+
+    // Сумма закрытых заявок
+    fetch('/api/v1/tickets/prosrochenotickets', {
+        'method': 'get',
+        'Content-Type': 'application/json'
+      }).then(response => response.json())
+        .then(response => {
+          this.ticketCount.prosrocheno = parseInt(response);
+        })
+
+        
     // Департаметы
     fetch('/api/v1/departments', {
       'method': 'get',

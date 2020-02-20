@@ -46,7 +46,7 @@ async function updateDB() {
 
 	let temp = []
 
-	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=open,closed`;
+	const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
 	const fetch_response = await fetch(api_url, {
 		method: 'GET',
 		headers: headers
@@ -57,7 +57,7 @@ async function updateDB() {
 	for(let i = 1; i <= json.pagination.total_pages; i++) {
 
 		// new url
-		const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}&status_list=open,closed`;
+		const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}`;
 		
 		// fetching data from new url
 		fetch(api_url, {
@@ -91,6 +91,8 @@ async function updateDB() {
 	console.log(json.pagination);
 }
 
+updateDB();
+
 
 // База обновляется 
 let j = schedule.scheduleJob(rule, function() {
@@ -99,7 +101,7 @@ let j = schedule.scheduleJob(rule, function() {
 })
 // Заявки
 app.get('/api/v1/tickets', async (request, response) => {
-	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=open,closed`;
+	const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
 	console.log(request.params)
 	const fetch_response = await fetch(api_url, {
 		method: 'GET',
@@ -113,13 +115,6 @@ app.get('/api/v1/tickets', async (request, response) => {
 		temp.push(json.data[record])
 	}
 
-	// console.log(...temp)
-	// saving to database
-	// temp.forEach(async value => {
-	// 	await db.insert(value, function(error, newDoc) {
-	// 		console.log('data has been successfully saved')
-	// 	})
-	// })
 	response.json(json);
 })
 
@@ -127,6 +122,31 @@ app.get('/api/v1/tickets', async (request, response) => {
 // открытые заявки
 app.get('/api/v1/tickets/open', async (request, response) => {
 	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=open`;
+	console.log(request.params)
+	const fetch_response = await fetch(api_url, {
+		method: 'GET',
+		headers: headers
+	});
+	const json = await fetch_response.json();
+	response.json(json);
+})
+
+// закрытые заявки
+app.get('/api/v1/tickets/closed', async (request, response) => {
+	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=closed`;
+	console.log(request.params)
+	const fetch_response = await fetch(api_url, {
+		method: 'GET',
+		headers: headers
+	});
+	const json = await fetch_response.json();
+	response.json(json);
+})
+
+// Просроченные заявки
+
+app.get('/api/v1/tickets/prosrocheno', async (request, response) => {
+	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=prosrocheno`;
 	console.log(request.params)
 	const fetch_response = await fetch(api_url, {
 		method: 'GET',
@@ -150,16 +170,11 @@ app.get('/api/v1/tickets/closedtickets', async (request, response) => {
 	})
 })
 
-// закрытые заявки
-app.get('/api/v1/tickets/closed', async (request, response) => {
-	const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=closed`;
-	console.log(request.params)
-	const fetch_response = await fetch(api_url, {
-		method: 'GET',
-		headers: headers
-	});
-	const json = await fetch_response.json();
-	response.json(json);
+// Счет просроченных заявок
+app.get('/api/v1/tickets/prosrochenotickets', async (request, response) => {
+	db.count({"status_id": "prosrocheno"}, function(error, count) {
+		response.json(count)
+	})
 })
 
 // Организации

@@ -84,6 +84,7 @@
           <a class="item active" data-tab="ticket">Заявки</a>
           <a class="item" data-tab="open_ticket">Открытые заявки</a>
           <a class="item" data-tab="closed_ticket">Закрытие заявки</a>
+          <a class="item" data-tab="prosrocheno_ticket">Просроченные заявки</a>
         </div>
 
 
@@ -94,13 +95,16 @@
               Всего
             </div>
             <div class="value">
-              {{ ticketCount.open + ticketCount.closed }}
+              {{ ticketCount.open + ticketCount.closed + ticketCount.prosrocheno }}
             </div>
           </div>
           <tickets :data="tickets"></tickets>
         </div>
 
 
+
+
+        <!-- Открытые заявки -->
         <div class="ui tab" data-tab="open_ticket">
           <h2>Открытые заявки</h2>
           <div class="ui statistic">
@@ -115,6 +119,7 @@
         </div>
 
 
+        <!-- Закрытые заявки -->
         <div class="ui tab" data-tab="closed_ticket">
           <h2>Закрытые заявки</h2>
           <div class="ui statistic">
@@ -126,6 +131,21 @@
             </div>
           </div>
           <tickets :data="closed_tickets"></tickets>
+        </div>
+        
+
+        <!-- Просроченные заявки -->
+        <div class="ui tab" data-tab="prosrocheno_ticket">
+          <h2>Просроченные заявки</h2>
+          <div class="ui statistic">
+            <div class="label">
+              Всего
+            </div>
+            <div class="value">
+              {{ ticketCount.prosrocheno }}
+            </div>
+          </div>
+          <tickets :data="prosrocheno_tickets"></tickets>
         </div>
 
 
