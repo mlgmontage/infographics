@@ -79,37 +79,14 @@ let j = schedule.scheduleJob(rule, function () {
   console.log("Database has been updated");
 });
 
-// закрытые заявки
-app.get("/api/v1/tickets/closed", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=closed`;
-  console.log(request.params);
-  const fetch_response = await fetch(api_url, {
-    method: "GET",
-    headers: headers,
-  });
-  const json = await fetch_response.json();
-  response.json(json);
-});
-
-// Просроченные заявки
-
-// Счет открытых заявок
-app.get("/api/v1/tickets/opentickets", async (request, response) => {
-  db.count({ status_id: "open" }, function (error, count) {
-    response.json(count);
-  });
-});
-
-// Счет закрытых заявок
-app.get("/api/v1/tickets/closedtickets", async (request, response) => {
-  db.count({ status_id: "closed" }, function (error, count) {
-    response.json(count);
-  });
-});
-
-// Счет просроченных заявок
-app.get("/api/v1/tickets/prosrochenotickets", async (request, response) => {
-  db.count({ status_id: "prosrocheno" }, function (error, count) {
+// Couting tickets
+app.get("/api/v1/count_tickets/:type", async (request, response) => {
+  const status_id = request.params.type;
+  // status_id can be only
+  // open
+  // closed
+  // prosrocheno
+  db.count({ status_id: status_id }, (error, count) => {
     response.json(count);
   });
 });
@@ -118,6 +95,8 @@ app.get("/api/v1/tickets/prosrochenotickets", async (request, response) => {
 app.get("/api/v1/:query", async (request, response) => {
   const api_url = `https://app.aqtau109.kz/api/v2/${request.params.query}`;
 
+  console.log(api_url);
+  console.log(request.query);
   const fetch_response = await fetch(api_url, {
     method: "GET",
     headers: headers,
