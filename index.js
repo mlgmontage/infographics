@@ -27,7 +27,8 @@ headers.set(
   "Basic " + Buffer.from(api_login + ":" + api_password).toString("base64")
 );
 
-const helpdesk_host = "https://app.aqtau109.kz/api/v2";
+// const helpdesk_host = "https://app.aqtau109.kz/api/v2";
+const helpdesk_host = "https://lama.helpdeskeddy.com/api/v2";
 
 // Обноволение базы данных
 function updateDB() {
@@ -88,6 +89,20 @@ app.get("/api/v1/count_tickets/:type", async (request, response) => {
   // prosrocheno
   db.count({ status_id: status_id }, (error, count) => {
     response.json(count);
+  });
+});
+
+// count tickets by deparment
+app.get("/api/v1/departments/:id", async (request, response) => {
+  const department_id = parseInt(request.params.id);
+  let json = {
+    department_id: department_id,
+    tickets_sum: 0,
+  };
+
+  db.count({ department_id: department_id }, (error, count) => {
+    json.tickets_sum = count;
+    response.json(json);
   });
 });
 
