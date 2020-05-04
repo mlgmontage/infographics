@@ -4,6 +4,7 @@ const port = process.env.PORT || 8080;
 const Datastore = require("nedb");
 const db = new Datastore({ filename: "database.json" });
 const schedule = require("node-schedule");
+const cors = require("cors");
 require("dotenv").config();
 
 db.loadDatabase();
@@ -15,14 +16,7 @@ rule.minute = 45;
 global.Headers = fetch.Headers;
 
 // Allow CORS
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+app.use(cors());
 
 // Authorization
 const api_login = process.env.API_LOGIN;
