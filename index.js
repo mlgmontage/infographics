@@ -27,17 +27,17 @@ headers.set(
   "Basic " + Buffer.from(api_login + ":" + api_password).toString("base64")
 );
 
+const helpdesk_host = "https://app.aqtau109.kz/api/v2";
+
 // Обноволение базы данных
 function updateDB() {
-  const pathToDBFile = "./database.json";
-
   // Удаление преведущей файла базы данных
 
   db.remove({}, { multi: true }, function (err, numRemoved) {
     console.log("database has been erased ");
   });
 
-  const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
+  const api_url = `${helpdesk_host}/tickets/`;
   fetch(api_url, {
     method: "GET",
     headers: headers,
@@ -51,7 +51,7 @@ function updateDB() {
       // iteration through pages
       for (let i = 1; i <= json.pagination.total_pages; i++) {
         // new url
-        const api_url = `https://app.aqtau109.kz/api/v2/tickets/?page=${i}`;
+        const api_url = `${helpdesk_host}/tickets/?page=${i}`;
         // fetching data from new url
         fetch(api_url, {
           method: "GET",
@@ -93,7 +93,7 @@ app.get("/api/v1/count_tickets/:type", async (request, response) => {
 
 // proxy
 app.get("/api/v1/:query", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/${request.params.query}`;
+  const api_url = `${helpdesk_host}/${request.params.query}`;
 
   console.log(api_url);
   console.log(request.query);
