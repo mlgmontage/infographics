@@ -95,8 +95,6 @@ app.get("/api/v1/count_tickets/:type", async (request, response) => {
 app.get("/api/v1/:query", async (request, response) => {
   const api_url = `${helpdesk_host}/${request.params.query}`;
 
-  console.log(api_url);
-  console.log(request.query);
   const fetch_response = await fetch(api_url, {
     method: "GET",
     headers: headers,
