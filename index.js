@@ -77,41 +77,12 @@ function updateDB() {
     });
 }
 
-updateDB();
+// updateDB();
 
 // База обновляется
 let j = schedule.scheduleJob(rule, function () {
   updateDB();
   console.log("Database has been updated");
-});
-// Заявки
-app.get("/api/v1/tickets", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/tickets/`;
-  console.log(request.params);
-  const fetch_response = await fetch(api_url, {
-    method: "GET",
-    headers: headers,
-  });
-  const json = await fetch_response.json();
-
-  let temp = [];
-  for (let record of Object.keys(json.data)) {
-    temp.push(json.data[record]);
-  }
-
-  response.json(json);
-});
-
-// открытые заявки
-app.get("/api/v1/tickets/open", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=open`;
-  console.log(request.params);
-  const fetch_response = await fetch(api_url, {
-    method: "GET",
-    headers: headers,
-  });
-  const json = await fetch_response.json();
-  response.json(json);
 });
 
 // закрытые заявки
@@ -127,17 +98,6 @@ app.get("/api/v1/tickets/closed", async (request, response) => {
 });
 
 // Просроченные заявки
-
-app.get("/api/v1/tickets/prosrocheno", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/tickets/?status_list=prosrocheno`;
-  console.log(request.params);
-  const fetch_response = await fetch(api_url, {
-    method: "GET",
-    headers: headers,
-  });
-  const json = await fetch_response.json();
-  response.json(json);
-});
 
 // Счет открытых заявок
 app.get("/api/v1/tickets/opentickets", async (request, response) => {
@@ -160,22 +120,10 @@ app.get("/api/v1/tickets/prosrochenotickets", async (request, response) => {
   });
 });
 
-// Организации
+// proxy
+app.get("/api/v1/:query", async (request, response) => {
+  const api_url = `https://app.aqtau109.kz/api/v2/${request.params.query}`;
 
-app.get("/api/v1/organizations", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/organizations/`;
-  const fetch_response = await fetch(api_url, {
-    method: "GET",
-    headers: headers,
-  });
-  const json = await fetch_response.json();
-  response.json(json);
-});
-
-// Департаменты
-app.get("/api/v1/departments", async (request, response) => {
-  const api_url = `https://app.aqtau109.kz/api/v2/departments`;
-  console.log(request.params);
   const fetch_response = await fetch(api_url, {
     method: "GET",
     headers: headers,
