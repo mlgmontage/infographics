@@ -92,6 +92,26 @@ app.get("/api/v1/count_tickets/:type", async (request, response) => {
   });
 });
 
+// sum rating
+app.get("/api/v1/rating", async (request, response) => {
+  db.count({ rate: "like" }, (error, like) => {
+    db.count({ rate: "dislike" }, (error, dislike) => {
+      response.json({ like, dislike });
+    });
+  });
+});
+
+// rating by departments
+app.get("/api/v1/rating/:department", async (request, response) => {
+  const department_id = parseInt(request.params.department);
+
+  db.count({ rate: "like", department_id }, (error, like) => {
+    db.count({ rate: "dislike", department_id }, (error, dislike) => {
+      response.json({ like, dislike });
+    });
+  });
+});
+
 // count tickets by deparment
 app.get("/api/v1/departments/:id", async (request, response) => {
   const department_id = parseInt(request.params.id);
