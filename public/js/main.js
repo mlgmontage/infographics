@@ -5,67 +5,31 @@ const app = new Vue({
     tickets: null,
     departments: null,
     organizations: null,
-    ticketCount: {
+    ticket_count: {
+      all: 0,
       open: 0,
       closed: 0,
       prosrocheno: 0,
+      like: 0,
+      dislike: 0,
     },
   },
   mounted: function () {
-    // Заявки
-    fetch("/api/v1/tickets", {
-      method: "get",
-      "Content-Type": "application/json",
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        this.tickets = response.data;
+    fetch("/api/v1/count_tickets")
+      .then((res) => res.json())
+      .then((data) => {
+        this.ticket_count = data;
+        console.log(data);
       });
-
-    // Сумма открытых заявок
-    fetch("/api/v1/count_tickets/open", {
-      method: "get",
-      "Content-Type": "application/json",
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        this.ticketCount.open = parseInt(response);
-      });
-
-    // Сумма закрытых заявок
-    fetch("/api/v1/count_tickets/closed", {
-      method: "get",
-      "Content-Type": "application/json",
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        this.ticketCount.closed = parseInt(response);
-      });
-
-    fetch("/api/v1/count_tickets/prosrocheno", {
-      method: "get",
-      "Content-Type": "application/json",
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        this.ticketCount.prosrocheno = parseInt(response);
-      });
-
     // Департаметы
-    fetch("/api/v1/departments", {
-      method: "get",
-      "Content-Type": "application/json",
-    })
+    fetch("/api/v1/departments")
       .then((response) => response.json())
       .then((response) => {
         this.departments = response.data;
       });
 
     // Организации
-    fetch("/api/v1/organizations", {
-      method: "get",
-      "Content-Type": "application/json",
-    })
+    fetch("/api/v1/organizations")
       .then((response) => response.json())
       .then((response) => {
         this.organizations = response.data;

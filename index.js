@@ -66,7 +66,7 @@ function updateDB() {
     });
 }
 
-// updateDB();
+updateDB();
 
 // База обновляется
 let j = schedule.scheduleJob(rule, function () {
