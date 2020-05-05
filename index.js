@@ -80,15 +80,34 @@ let j = schedule.scheduleJob(rule, function () {
   console.log("Database has been updated");
 });
 
-// Couting tickets
-app.get("/api/v1/count_tickets/:type", async (request, response) => {
-  const status_id = request.params.type;
-  // status_id can be only
-  // open
-  // closed
-  // prosrocheno
-  db.count({ status_id: status_id }, (error, count) => {
-    response.json(count);
+// Counting tickets 2.0
+app.get("/api/v1/count_tickets", async (request, response) => {
+  db.count({}, (error, all) => {
+    db.count({ status_id: "open" }, (error, open) => {
+      db.count({ status_id: "closed" }, (error, closed) => {
+        db.count({ status_id: "prosrocheno" }, (error, prosrocheno) => {
+          response.json({ all, open, closed, prosrocheno });
+        });
+      });
+    });
+  });
+});
+
+// Counting tickets by deparment 2.0
+app.get("/api/v1/count_tickets/:department_id", async (request, response) => {
+  const department_id = parseInt(request.params.department_id);
+
+  db.count({ department_id }, (error, all) => {
+    db.count({ status_id: "open", department_id }, (error, open) => {
+      db.count({ status_id: "closed", department_id }, (error, closed) => {
+        db.count(
+          { status_id: "prosrocheno", department_id },
+          (error, prosrocheno) => {
+            response.json({ all, open, closed, prosrocheno });
+          }
+        );
+      });
+    });
   });
 });
 
@@ -104,8 +123,8 @@ app.get("/api/v1/rating", async (request, response) => {
 });
 
 // rating by departments
-app.get("/api/v1/rating/:department", async (request, response) => {
-  const department_id = parseInt(request.params.department);
+app.get("/api/v1/rating/:department_id", async (request, response) => {
+  const department_id = parseInt(request.params.department_id);
 
   db.count({ department_id }, (error, all) => {
     db.count({ rate: "like", department_id }, (error, like) => {
@@ -113,20 +132,6 @@ app.get("/api/v1/rating/:department", async (request, response) => {
         response.json({ all, like, dislike });
       });
     });
-  });
-});
-
-// count tickets by deparment
-app.get("/api/v1/departments/:id", async (request, response) => {
-  const department_id = parseInt(request.params.id);
-  let json = {
-    department_id: department_id,
-    tickets_sum: 0,
-  };
-
-  db.count({ department_id: department_id }, (error, count) => {
-    json.tickets_sum = count;
-    response.json(json);
   });
 });
 
