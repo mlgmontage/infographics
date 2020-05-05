@@ -94,9 +94,11 @@ app.get("/api/v1/count_tickets/:type", async (request, response) => {
 
 // sum rating
 app.get("/api/v1/rating", async (request, response) => {
-  db.count({ rate: "like" }, (error, like) => {
-    db.count({ rate: "dislike" }, (error, dislike) => {
-      response.json({ like, dislike });
+  db.count({}, (error, all) => {
+    db.count({ rate: "like" }, (error, like) => {
+      db.count({ rate: "dislike" }, (error, dislike) => {
+        response.json({ all, like, dislike });
+      });
     });
   });
 });
@@ -105,9 +107,11 @@ app.get("/api/v1/rating", async (request, response) => {
 app.get("/api/v1/rating/:department", async (request, response) => {
   const department_id = parseInt(request.params.department);
 
-  db.count({ rate: "like", department_id }, (error, like) => {
-    db.count({ rate: "dislike", department_id }, (error, dislike) => {
-      response.json({ like, dislike });
+  db.count({ department_id }, (error, all) => {
+    db.count({ rate: "like", department_id }, (error, like) => {
+      db.count({ rate: "dislike", department_id }, (error, dislike) => {
+        response.json({ all, like, dislike });
+      });
     });
   });
 });
