@@ -34,18 +34,15 @@ const helpdesk_host = "https://lama.helpdeskeddy.com/api/v2";
 function updateDB() {
   // Удаление преведущей файла базы данных
 
-  db.remove({}, { multi: true }, function (err, numRemoved) {
+  db.remove({}, { multi: true }, (err, numRemoved) => {
     console.log("database has been erased ");
   });
 
   const api_url = `${helpdesk_host}/tickets/`;
   fetch(api_url, {
-    method: "GET",
     headers: headers,
   })
-    .then((response) => {
-      return response.json();
-    })
+    .then((response) => response.json())
     .then((json) => {
       console.log(json);
 
@@ -55,12 +52,9 @@ function updateDB() {
         const api_url = `${helpdesk_host}/tickets/?page=${i}`;
         // fetching data from new url
         fetch(api_url, {
-          method: "GET",
           headers: headers,
         })
-          .then((response) => {
-            return response.json();
-          })
+          .then((response) => response.json())
           .then((json) => {
             for (let record of Object.keys(json.data)) {
               db.insert(json.data[record], function (error, newDoc) {
@@ -86,7 +80,11 @@ app.get("/api/v1/count_tickets", async (request, response) => {
     db.count({ status_id: "open" }, (error, open) => {
       db.count({ status_id: "closed" }, (error, closed) => {
         db.count({ status_id: "prosrocheno" }, (error, prosrocheno) => {
-          response.json({ all, open, closed, prosrocheno });
+          db.count({ rate: "like" }, (error, like) => {
+            db.count({ rate: "dislike" }, (error, dislike) => {
+              response.json({ all, open, closed, prosrocheno, like, dislike });
+            });
+          });
         });
       });
     });
@@ -103,33 +101,20 @@ app.get("/api/v1/count_tickets/:department_id", async (request, response) => {
         db.count(
           { status_id: "prosrocheno", department_id },
           (error, prosrocheno) => {
-            response.json({ all, open, closed, prosrocheno });
+            db.count({ rate: "like", department_id }, (error, like) => {
+              db.count({ rate: "dislike", department_id }, (error, dislike) => {
+                response.json({
+                  all,
+                  open,
+                  closed,
+                  prosrocheno,
+                  like,
+                  dislike,
+                });
+              });
+            });
           }
         );
-      });
-    });
-  });
-});
-
-// sum rating
-app.get("/api/v1/rating", async (request, response) => {
-  db.count({}, (error, all) => {
-    db.count({ rate: "like" }, (error, like) => {
-      db.count({ rate: "dislike" }, (error, dislike) => {
-        response.json({ all, like, dislike });
-      });
-    });
-  });
-});
-
-// rating by departments
-app.get("/api/v1/rating/:department_id", async (request, response) => {
-  const department_id = parseInt(request.params.department_id);
-
-  db.count({ department_id }, (error, all) => {
-    db.count({ rate: "like", department_id }, (error, like) => {
-      db.count({ rate: "dislike", department_id }, (error, dislike) => {
-        response.json({ all, like, dislike });
       });
     });
   });
