@@ -2,12 +2,13 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 8080;
 const Datastore = require("nedb");
-const db = new Datastore({ filename: "database.json" });
+const NeDbPromise = require("nedb-promise");
+// const db = new Datastore({ filename: "database.json" });
+const dbpromise = NeDbPromise({ filename: "database.json", autoload: true });
 const schedule = require("node-schedule");
 const cors = require("cors");
 require("dotenv").config();
 
-db.loadDatabase();
 const fetch = require("node-fetch");
 const rule = new schedule.RecurrenceRule();
 
@@ -28,42 +29,31 @@ headers.set(
 );
 
 // const helpdesk_host = "https://app.aqtau109.kz/api/v2";
-const helpdesk_host = "https://lama.helpdeskeddy.com/api/v2";
+const helpdesk_host = "https://pasha.helpdeskeddy.com/api/v2";
 
 // Обноволение базы данных
-function updateDB() {
+async function updateDB() {
   // Удаление преведущей файла базы данных
 
-  db.remove({}, { multi: true }, (err, numRemoved) => {
-    console.log("database has been erased ");
-  });
+  await dbpromise.remove({}, { multi: true });
 
   const api_url = `${helpdesk_host}/tickets/`;
-  fetch(api_url, {
-    headers: headers,
-  })
-    .then((response) => response.json())
-    .then((json) => {
-      console.log(json);
+  const response = await fetch(api_url, { headers });
+  const json = await response.json();
+  console.log(json);
 
-      // iteration through pages
-      for (let i = 1; i <= json.pagination.total_pages; i++) {
-        // new url
-        const api_url = `${helpdesk_host}/tickets/?page=${i}`;
-        // fetching data from new url
-        fetch(api_url, {
-          headers: headers,
-        })
-          .then((response) => response.json())
-          .then((json) => {
-            for (let record of Object.keys(json.data)) {
-              db.insert(json.data[record], function (error, newDoc) {
-                console.log("data has been successfully saved");
-              });
-            }
-          });
-      }
-    });
+  // iteration through pages
+  for (let i = 1; i <= json.pagination.total_pages; i++) {
+    // new url
+    const api_url_page = `${helpdesk_host}/tickets/?page=${i}`;
+    // fetching data from new url
+    const page_response = await fetch(api_url_page, { headers });
+    const page_json = await page_response.json();
+
+    for (let record of Object.keys(page_json.data)) {
+      dbpromise.insert(page_json.data[record]);
+    }
+  }
 }
 
 updateDB();
@@ -76,48 +66,29 @@ let j = schedule.scheduleJob(rule, function () {
 
 // Counting tickets 2.0
 app.get("/api/v1/count_tickets", async (request, response) => {
-  db.count({}, (error, all) => {
-    db.count({ status_id: "open" }, (error, open) => {
-      db.count({ status_id: "closed" }, (error, closed) => {
-        db.count({ status_id: "prosrocheno" }, (error, prosrocheno) => {
-          db.count({ rate: "like" }, (error, like) => {
-            db.count({ rate: "dislike" }, (error, dislike) => {
-              response.json({ all, open, closed, prosrocheno, like, dislike });
-            });
-          });
-        });
-      });
-    });
-  });
+  const all = await dbpromise.count({});
+  const open = await dbpromise.count({ status_id: "open" });
+  const closed = await dbpromise.count({ status_id: "closed" });
+  const prosrocheno = await dbpromise.count({ status_id: "prosrocheno" });
+  const like = await dbpromise.count({ rate: "like" });
+  const dislike = await dbpromise.count({ rate: "dislike" });
+  response.json({ all, open, closed, prosrocheno, like, dislike });
 });
 
 // Counting tickets by deparment 2.0
 app.get("/api/v1/count_tickets/:department_id", async (request, response) => {
   const department_id = parseInt(request.params.department_id);
 
-  db.count({ department_id }, (error, all) => {
-    db.count({ status_id: "open", department_id }, (error, open) => {
-      db.count({ status_id: "closed", department_id }, (error, closed) => {
-        db.count(
-          { status_id: "prosrocheno", department_id },
-          (error, prosrocheno) => {
-            db.count({ rate: "like", department_id }, (error, like) => {
-              db.count({ rate: "dislike", department_id }, (error, dislike) => {
-                response.json({
-                  all,
-                  open,
-                  closed,
-                  prosrocheno,
-                  like,
-                  dislike,
-                });
-              });
-            });
-          }
-        );
-      });
-    });
+  const all = await dbpromise.count({ department_id });
+  const open = await dbpromise.count({ status_id: "open", department_id });
+  const closed = await dbpromise.count({ status_id: "closed", department_id });
+  const prosrocheno = await dbpromise.count({
+    status_id: "prosrocheno",
+    department_id,
   });
+  const like = await dbpromise.count({ rate: "like", department_id });
+  const dislike = await dbpromise.count({ rate: "dislike", department_id });
+  response.json({ all, open, closed, prosrocheno, like, dislike });
 });
 
 // proxy
