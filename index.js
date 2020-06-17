@@ -1,9 +1,7 @@
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 8080;
-const Datastore = require("nedb");
 const NeDbPromise = require("nedb-promise");
-// const db = new Datastore({ filename: "database.json" });
 const dbpromise = NeDbPromise({ filename: "database.json", autoload: true });
 const schedule = require("node-schedule");
 const cors = require("cors");
@@ -28,7 +26,6 @@ headers.set(
   "Basic " + Buffer.from(api_login + ":" + api_password).toString("base64")
 );
 
-// const helpdesk_host = "https://app.aqtau109.kz/api/v2";
 const helpdesk_host = "https://pasha.helpdeskeddy.com/api/v2";
 
 // Обноволение базы данных
@@ -59,12 +56,12 @@ async function updateDB() {
 updateDB();
 
 // База обновляется
-let j = schedule.scheduleJob(rule, function () {
-  updateDB();
+let j = schedule.scheduleJob(rule, async function () {
+  await updateDB();
   console.log("Database has been updated");
 });
 
-// Counting tickets 2.0
+// Counting tickets 3.0
 app.get("/api/v1/count_tickets", async (request, response) => {
   const all = await dbpromise.count({});
   const open = await dbpromise.count({ status_id: "open" });
@@ -75,7 +72,7 @@ app.get("/api/v1/count_tickets", async (request, response) => {
   response.json({ all, open, closed, prosrocheno, like, dislike });
 });
 
-// Counting tickets by deparment 2.0
+// Counting tickets by deparment 3.0
 app.get("/api/v1/count_tickets/:department_id", async (request, response) => {
   const department_id = parseInt(request.params.department_id);
 
