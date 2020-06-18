@@ -4,10 +4,12 @@ const port = process.env.PORT || 8080;
 const NeDbPromise = require("nedb-promise");
 const dbpromise = NeDbPromise({ filename: "database.json", autoload: true });
 const schedule = require("node-schedule");
+const _ = require("lodash");
 const cors = require("cors");
 require("dotenv").config();
 
 const fetch = require("node-fetch");
+const { request, response } = require("express");
 const rule = new schedule.RecurrenceRule();
 
 rule.minute = 45;
@@ -70,6 +72,27 @@ app.get("/api/v1/count_tickets", async (request, response) => {
   const like = await dbpromise.count({ rate: "like" });
   const dislike = await dbpromise.count({ rate: "dislike" });
   response.json({ all, open, closed, prosrocheno, like, dislike });
+});
+
+app.get("/api/v1/category", async (request, response) => {
+  let categories = [];
+
+  // query to DB
+  const tickets = await dbpromise.find({
+    custom_fields: { $elemMatch: { field_type: "hierarchy" } },
+  });
+
+  tickets.map((category) => {
+    let category_name = category.custom_fields[0].field_value[1].name.ru;
+    let subcategory_name = category.custom_fields[0].field_value[2].name.ru;
+
+    categories.push({
+      category_name,
+      subcategory_name,
+    });
+  });
+
+  response.json({ category: _.groupBy(categories, "category_name") });
 });
 
 // Counting tickets by deparment 3.0
