@@ -74,25 +74,71 @@ app.get("/api/v1/count_tickets", async (request, response) => {
   response.json({ all, open, closed, prosrocheno, like, dislike });
 });
 
+// count category
 app.get("/api/v1/category", async (request, response) => {
   let categories = [];
+  let data = [];
+
+  // query to DB
+  const tickets = await dbpromise.find({
+    custom_fields: {
+      $elemMatch: { field_type: "hierarchy" },
+    },
+  });
+
+  tickets.map((category) => {
+    if (!category.custom_fields[0].field_value[1].name) return;
+    let category_name = category.custom_fields[0].field_value[1].name.ru;
+    // let subcategory_name = category.custom_fields[0].field_value[2].name.ru;
+    console.log(category.custom_fields[0].field_value[1]);
+
+    categories.push({
+      category_name,
+    });
+  });
+
+  categories = _.countBy(categories, "category_name");
+  for (let key in categories) {
+    data.push({
+      category_name: key,
+      length: categories[key],
+    });
+  }
+
+  response.json(data);
+});
+
+// count category by department
+app.get("/api/v1/category/:department_id", async (request, response) => {
+  const department_id = parseInt(request.params.department_id);
+  let categories = [];
+  let data = [];
 
   // query to DB
   const tickets = await dbpromise.find({
     custom_fields: { $elemMatch: { field_type: "hierarchy" } },
+    department_id,
   });
 
   tickets.map((category) => {
+    if (!category.custom_fields[0].field_value[1].name) return;
     let category_name = category.custom_fields[0].field_value[1].name.ru;
-    let subcategory_name = category.custom_fields[0].field_value[2].name.ru;
+    // let subcategory_name = category.custom_fields[0].field_value[2].name.ru;
 
     categories.push({
       category_name,
-      subcategory_name,
     });
   });
 
-  response.json({ category: _.groupBy(categories, "category_name") });
+  categories = _.countBy(categories, "category_name");
+  for (let key in categories) {
+    data.push({
+      category_name: key,
+      length: categories[key],
+    });
+  }
+
+  response.json(data);
 });
 
 // Counting tickets by deparment 3.0
